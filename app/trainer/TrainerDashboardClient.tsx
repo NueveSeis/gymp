@@ -14,7 +14,7 @@ type Client = { id: number; username: string; fullName: string | null; role: str
 type Exercise = { id: number; name: string; description: string | null; imageUrl: string | null; videoUrl: string | null; localImagePath: string | null; localVideoPath: string | null }
 type Assignment = {
   id: number; clientId: number; trainerId: number; exerciseId: number
-  scheduledDate: Date; sets: number; reps: number; completed: boolean
+  scheduledDate: string; sets: number; reps: number; completed: boolean
   exercise: Exercise
   client: { id: number; fullName: string | null; username: string }
 }
