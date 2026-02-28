@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "rhel-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
+  role      Role
+  fullName  String?  @map("full_name") @db.VarChar(100)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  assignmentsAsClient  Assignment[] @relation("ClientAssignments")
+  assignmentsAsTrainer Assignment[] @relation("TrainerAssignments")
+
+  @@map("users")
+}
+
+model Exercise {
+  id             Int      @id @default(autoincrement())
+  name           String   @db.VarChar(100)
+  description    String?  @db.Text
+  imageUrl       String?  @map("image_url") @db.VarChar(255)
+  videoUrl       String?  @map("video_url") @db.VarChar(255)
+  localImagePath String?  @map("local_image_path") @db.VarChar(255)
+  localVideoPath String?  @map("local_video_path") @db.VarChar(255)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  assignments Assignment[]
+
+  @@map("exercises")
+}
+
+model Assignment {
+  id            Int      @id @default(autoincrement())
+  clientId      Int      @map("client_id")
+  trainerId     Int      @map("trainer_id")
+  exerciseId    Int      @map("exercise_id")
+  scheduledDate DateTime @map("scheduled_date") @db.Date
+  sets          Int      @default(0)
+  reps          Int      @default(0)
+  completed     Boolean  @default(false)
+
+  client   User     @relation("ClientAssignments", fields: [clientId], references: [id])
+  trainer  User     @relation("TrainerAssignments", fields: [trainerId], references: [id])
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@map("assignments")
+}
+
+enum Role {
+  admin
+  trainer
+  client
+}
