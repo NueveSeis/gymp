@@ -1,25 +1,42 @@
 'use client'
 
-import { useFormStatus } from 'react-dom'
-import { loginAction } from '@/actions/auth'
 import { useState } from 'react'
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <button type="submit" className="btn btn-primary btn-full" disabled={pending}>
-      {pending ? 'Ingresando...' : 'Ingresar'}
-    </button>
-  )
-}
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
-  async function handleAction(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setError(null)
-    const result = await loginAction(formData)
-    if (result?.error) setError(result.error)
+    setLoading(true)
+
+    const formData = new FormData(e.currentTarget)
+    const username = formData.get('username') as string
+    const password = formData.get('password') as string
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || data.error) {
+        setError(data.error || 'Error al iniciar sesión')
+      } else {
+        router.push(data.redirectTo)
+        router.refresh()
+      }
+    } catch {
+      setError('Error de conexión. Intenta nuevamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -31,7 +48,7 @@ export default function LoginPage() {
 
         {error && <div className="alert alert-error">{error}</div>}
 
-        <form action={handleAction}>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Usuario</label>
             <input
@@ -56,7 +73,9 @@ export default function LoginPage() {
             />
           </div>
 
-          <SubmitButton />
+          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+            {loading ? 'Ingresando...' : 'Ingresar'}
+          </button>
         </form>
 
         <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
