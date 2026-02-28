@@ -11,11 +11,17 @@ export default async function TrainerPage() {
   if (!session) redirect('/login')
   if (session.role === 'client') redirect('/client')
 
-  const [clients, exercises, assignments] = await Promise.all([
+  const [clients, exercises, rawAssignments] = await Promise.all([
     getUsers('client'),
     getExercises(),
     getAssignments(),
   ])
+
+  // Serializar las fechas a string para que sean compatibles con el componente cliente
+  const assignments = rawAssignments.map(a => ({
+    ...a,
+    scheduledDate: a.scheduledDate.toISOString(),
+  }))
 
   return (
     <>
