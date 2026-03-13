@@ -2,12 +2,13 @@
 
 import { logoutAction } from '@/actions/auth'
 import { useFormStatus } from 'react-dom'
+import Image from 'next/image'
 
 function LogoutBtn() {
   const { pending } = useFormStatus()
   return (
     <button type="submit" className="btn btn-ghost btn-sm" disabled={pending}>
-      {pending ? 'Saliendo...' : 'Cerrar sesión'}
+      {pending ? 'Saliendo…' : 'Cerrar sesión'}
     </button>
   )
 }
@@ -17,7 +18,16 @@ export default function Navbar({ username, role, systemName, logoUrl }: { userna
   return (
     <nav className="navbar">
       <span className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        {logoUrl ? <img src={logoUrl} alt={systemName || 'Logo'} style={{ height: '32px', objectFit: 'contain' }} /> : '⚡'}
+        {logoUrl ? (
+          <Image 
+            src={logoUrl} 
+            alt={systemName || 'Logo'} 
+            width={32} 
+            height={32} 
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+        ) : '⚡'}
         {systemName || 'GymPro'}
       </span>
       <div className="navbar-user">

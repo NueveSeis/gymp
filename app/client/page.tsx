@@ -6,6 +6,7 @@ import { getAssignments } from '@/actions/assignments'
 import { getSettings } from '@/actions/settings'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default async function ClientPage(props: { searchParams?: Promise<{ date?: string }> }) {
   const session = await getSession()
@@ -15,8 +16,6 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
   const searchParams = await props.searchParams;
   const dateQuery = searchParams?.date;
 
-  const settings = await getSettings();
-
   // Manejo de fecha sin verse afectado por la zona horaria del servidor
   let targetDate = new Date();
   if (dateQuery && /^\d{4}-\d{2}-\d{2}$/.test(dateQuery)) {
@@ -25,7 +24,11 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
   }
 
   const dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
-  const assignments = await getAssignments(session.id, dateStr);
+  
+  const [settings, assignments] = await Promise.all([
+    getSettings(),
+    getAssignments(session.id, dateStr)
+  ]);
 
   const dailyMuscleGroups = Array.from(new Set(assignments.map((a: any) => a.exercise.muscleGroup).filter(Boolean))) as string[];
 
@@ -155,10 +158,15 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
 
                 return (
                   <div key={a.id} className="workout-card">
-                    <img
-                      src={imgSrc}
-                      alt={ex.name}
-                    />
+                    <div style={{ position: 'relative', height: '180px', width: '100%' }}>
+                      <Image
+                        src={imgSrc}
+                        alt={ex.name}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
                     <div className="workout-card-body">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                         <h3 style={{ fontWeight: 700, fontSize: '1rem' }}>{ex.name}</h3>

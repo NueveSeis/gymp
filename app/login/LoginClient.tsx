@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function LoginClient({ systemName, logoUrl }: { systemName: string, logoUrl: string | null }) {
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +44,7 @@ export default function LoginClient({ systemName, logoUrl }: { systemName: strin
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          {logoUrl ? <img src={logoUrl} alt={systemName} style={{ height: '64px', objectFit: 'contain' }} /> : '🏋️'}
+          {logoUrl ? <Image src={logoUrl} alt={systemName} width={64} height={64} style={{ objectFit: 'contain' }} priority /> : '🏋️'}
         </div>
         <h1 className="login-title">{systemName}</h1>
         <p className="login-subtitle">Plataforma de entrenamiento profesional</p>
@@ -60,6 +61,7 @@ export default function LoginClient({ systemName, logoUrl }: { systemName: strin
               placeholder="Ingresa tu usuario"
               required
               autoComplete="username"
+              spellCheck={false}
             />
           </div>
 
@@ -76,7 +78,7 @@ export default function LoginClient({ systemName, logoUrl }: { systemName: strin
           </div>
 
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Ingresando...' : 'Ingresar'}
+            {loading ? 'Ingresando…' : 'Ingresar'}
           </button>
         </form>
 

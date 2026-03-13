@@ -10,6 +10,7 @@ import { createExercise, updateExercise, deleteExercise } from '@/actions/exerci
 import { createUser, updateUser, toggleUserStatus } from '@/actions/users'
 import { updateSettings } from '@/actions/settings'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 type Client = { id: number; username: string; fullName: string | null; role: string; isActive: boolean }
 type Exercise = { id: number; name: string; description: string | null; imageUrl: string | null; videoUrl: string | null; localImagePath: string | null; localVideoPath: string | null; muscleGroup: string | null }
@@ -188,11 +189,15 @@ export default function TrainerDashboardClient({
           <div className="exercise-grid">
             {exercises.map(ex => (
               <div key={ex.id} className="exercise-card">
-                <img
-                  src={ex.localImagePath || ex.imageUrl || `https://placehold.co/400x200/1a2235/60a5fa?text=${encodeURIComponent(ex.name)}`}
-                  alt={ex.name}
-                  onError={e => { (e.target as HTMLImageElement).src = `https://placehold.co/400x200/1a2235/60a5fa?text=${encodeURIComponent(ex.name)}` }}
-                />
+                <div style={{ position: 'relative', height: '160px', width: '100%' }}>
+                  <Image
+                    src={ex.localImagePath || ex.imageUrl || `https://placehold.co/400x200/1a2235/60a5fa?text=${encodeURIComponent(ex.name)}`}
+                    alt={ex.name}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  />
+                </div>
                 <div className="exercise-card-body">
                   <div className="exercise-card-title" style={{ textWrap: 'balance' }}>{ex.name}</div>
                   <div className="exercise-card-desc" style={{ textWrap: 'pretty' }}>{ex.description || 'Sin descripción'}</div>
@@ -209,9 +214,9 @@ export default function TrainerDashboardClient({
               </div>
             ))}
             {exercises.length === 0 && (
-              <div className="empty-state" style={{ gridColumn: '1/-1' }}>
+              <div className="empty-state" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem' }}>
                 <span style={{ fontSize: '3rem' }}>🏋️</span>
-                <p>No hay ejercicios. ¡Crea el primero!</p>
+                <p>No hay ejercicios aún… ¡Crea el primero!</p>
               </div>
             )}
           </div>
