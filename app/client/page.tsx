@@ -25,6 +25,8 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
   const dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
   const assignments = await getAssignments(session.id, dateStr);
 
+  const dailyMuscleGroups = Array.from(new Set(assignments.map((a: any) => a.exercise.muscleGroup).filter(Boolean))) as string[];
+
   // Calcular día anterior
   const prevDate = new Date(targetDate);
   prevDate.setDate(prevDate.getDate() - 1);
@@ -92,6 +94,56 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
                 </div>
               </div>
             </div>
+
+            {dailyMuscleGroups.length > 0 && (
+              <div className="card" style={{ 
+                marginBottom: '2rem', 
+                padding: '2rem', 
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%)', 
+                border: '1px solid var(--border)',
+                borderLeft: '4px solid var(--accent)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent-light)', marginBottom: '0.5rem' }}>
+                    Enfoque del día
+                  </p>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>
+                    Hoy trabajamos: <span style={{ color: 'var(--text-primary)' }}>{dailyMuscleGroups.join(', ')}</span>
+                  </h2>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    {dailyMuscleGroups.map(mg => (
+                      <span key={mg} className="badge badge-blue" style={{ 
+                        padding: '0.6rem 1.2rem', 
+                        fontSize: '0.85rem', 
+                        borderRadius: '12px', 
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-primary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <span style={{ fontSize: '1.1rem' }}>💪</span> {mg}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                {/* Subtle background decoration */}
+                <div style={{ 
+                  position: 'absolute', 
+                  right: '-20px', 
+                  bottom: '-20px', 
+                  fontSize: '8rem', 
+                  opacity: 0.05, 
+                  transform: 'rotate(-15deg)',
+                  pointerEvents: 'none'
+                }}>
+                  🏋️
+                </div>
+              </div>
+            )}
 
             <div className="workout-grid">
               {assignments.map((a: any, i: number) => {
