@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { writeFile } from 'fs/promises'
+import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 
 async function saveUploadedFile(file: File | null): Promise<string | null> {
@@ -10,19 +10,33 @@ async function saveUploadedFile(file: File | null): Promise<string | null> {
   const buffer = Buffer.from(await file.arrayBuffer());
   const filename = `${Date.now()}-logo-${file.name.replace(/\s+/g, '_')}`;
   const uploadDir = join(process.cwd(), 'public', 'uploads');
+  
+  // Asegurar que el directorio existe
+  await mkdir(uploadDir, { recursive: true });
+  
   const filepath = join(uploadDir, filename);
   await writeFile(filepath, buffer);
   return `/uploads/${filename}`;
 }
 
 export async function getSettings() {
-  let settings = await prisma.systemSetting.findFirst()
-  if (!settings) {
-    settings = await prisma.systemSetting.create({
-      data: { systemName: 'GymPro' }
-    })
+  try {
+    let settings = await prisma.systemSetting.findFirst()
+    if (!settings) {
+      settings = await prisma.systemSetting.create({
+        data: { systemName: 'GymPro' }
+      })
+    }
+    return settings
+  } catch (e) {
+    console.error('Error fetching settings, using defaults:', e)
+    return {
+      id: 0,
+      systemName: 'GymPro',
+      logoUrl: null,
+      localLogoPath: null
+    }
   }
-  return settings
 }
 
 export async function updateSettings(formData: FormData) {
