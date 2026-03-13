@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "hostinger:build": "prisma generate && next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
+    "hostinger:build": "prisma generate && SKIP_ENV_VALIDATION=1 next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
     "hostinger:start": "node .next/standalone/server.js",
     "lint": "eslint",
     "postinstall": "prisma generate"
