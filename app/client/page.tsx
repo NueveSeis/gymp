@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getSession } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { getAssignments } from '@/actions/assignments'
@@ -12,16 +14,16 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
 
   const searchParams = await props.searchParams;
   const dateQuery = searchParams?.date;
-  
+
   const settings = await getSettings();
-  
+
   // Manejo de fecha sin verse afectado por la zona horaria del servidor
   let targetDate = new Date();
   if (dateQuery && /^\d{4}-\d{2}-\d{2}$/.test(dateQuery)) {
     const [yyyy, mm, dd] = dateQuery.split('-');
     targetDate = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
   }
-  
+
   const dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
   const assignments = await getAssignments(session.id, dateStr);
 
@@ -79,7 +81,7 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
                   <div className="stat-label">Ejercicios</div>
                 </div>
               </div>
-                <div className="stat-card">
+              <div className="stat-card">
                 <div className="stat-icon">🔁</div>
                 <div>
                   <div className="stat-value">{assignments.reduce((s: number, a: any) => s + a.sets, 0)}</div>
@@ -96,10 +98,10 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
             </div>
 
             {dailyMuscleGroups.length > 0 && (
-              <div className="card" style={{ 
-                marginBottom: '2rem', 
-                padding: '2rem', 
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%)', 
+              <div className="card" style={{
+                marginBottom: '2rem',
+                padding: '2rem',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%)',
                 border: '1px solid var(--border)',
                 borderLeft: '4px solid var(--accent)',
                 position: 'relative',
@@ -114,10 +116,10 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
                   </h2>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     {dailyMuscleGroups.map(mg => (
-                      <span key={mg} className="badge badge-blue" style={{ 
-                        padding: '0.6rem 1.2rem', 
-                        fontSize: '0.85rem', 
-                        borderRadius: '12px', 
+                      <span key={mg} className="badge badge-blue" style={{
+                        padding: '0.6rem 1.2rem',
+                        fontSize: '0.85rem',
+                        borderRadius: '12px',
                         background: 'var(--bg-card)',
                         border: '1px solid var(--border)',
                         color: 'var(--text-primary)',
@@ -131,12 +133,12 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
                   </div>
                 </div>
                 {/* Subtle background decoration */}
-                <div style={{ 
-                  position: 'absolute', 
-                  right: '-20px', 
-                  bottom: '-20px', 
-                  fontSize: '8rem', 
-                  opacity: 0.05, 
+                <div style={{
+                  position: 'absolute',
+                  right: '-20px',
+                  bottom: '-20px',
+                  fontSize: '8rem',
+                  opacity: 0.05,
                   transform: 'rotate(-15deg)',
                   pointerEvents: 'none'
                 }}>
@@ -186,13 +188,13 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
                           Tu navegador no soporta el formato de video.
                         </video>
                       ) : ytId ? (
-                        <iframe 
-                          width="100%" 
-                          height="220" 
-                          src={`https://www.youtube.com/embed/${ytId}`} 
-                          title={`Video de ${ex.name}`} 
-                          frameBorder="0" 
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        <iframe
+                          width="100%"
+                          height="220"
+                          src={`https://www.youtube.com/embed/${ytId}`}
+                          title={`Video de ${ex.name}`}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
                           style={{ marginTop: '0.75rem', borderRadius: '8px' }}
                         ></iframe>
