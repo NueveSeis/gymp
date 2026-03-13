@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
+    "hostinger:build": "prisma generate && next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
+    "hostinger:start": "node .next/standalone/server.js",
     "lint": "eslint",
     "postinstall": "prisma generate"
   },
@@ -16,7 +18,8 @@
     "next": "16.1.6",
     "prisma": "^5.22.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

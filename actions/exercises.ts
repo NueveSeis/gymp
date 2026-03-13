@@ -25,6 +25,7 @@ export async function createExercise(formData: FormData) {
   const description = formData.get('description') as string
   const imageUrl = formData.get('imageUrl') as string
   const videoUrl = formData.get('videoUrl') as string
+  const muscleGroup = formData.get('muscleGroup') as string
 
   const imageFile = formData.get('image') as File | null;
   const videoFile = formData.get('video') as File | null;
@@ -34,7 +35,7 @@ export async function createExercise(formData: FormData) {
     const localVideoPath = await saveUploadedFile(videoFile);
 
     await prisma.exercise.create({
-      data: { name, description, imageUrl, videoUrl, localImagePath, localVideoPath },
+      data: { name, description, imageUrl, videoUrl, localImagePath, localVideoPath, muscleGroup },
     })
     revalidatePath('/trainer')
     return { success: true }
@@ -49,6 +50,7 @@ export async function updateExercise(formData: FormData) {
   const description = formData.get('description') as string
   const imageUrl = formData.get('imageUrl') as string
   const videoUrl = formData.get('videoUrl') as string
+  const muscleGroup = formData.get('muscleGroup') as string
   
   const removeImage = formData.get('remove_image') === 'true'
   const removeVideo = formData.get('remove_video') === 'true'
@@ -60,7 +62,7 @@ export async function updateExercise(formData: FormData) {
     const newLocalImagePath = await saveUploadedFile(imageFile);
     const newLocalVideoPath = await saveUploadedFile(videoFile);
 
-    const updateData: any = { name, description, imageUrl, videoUrl };
+    const updateData: any = { name, description, imageUrl, videoUrl, muscleGroup };
     if (newLocalImagePath) updateData.localImagePath = newLocalImagePath;
     else if (removeImage) updateData.localImagePath = null;
 

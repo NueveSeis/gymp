@@ -8,26 +8,29 @@ import {
 } from '@/actions/assignments'
 import { createExercise, updateExercise, deleteExercise } from '@/actions/exercises'
 import { createUser, updateUser, toggleUserStatus } from '@/actions/users'
+import { updateSettings } from '@/actions/settings'
 import { useRouter } from 'next/navigation'
 
 type Client = { id: number; username: string; fullName: string | null; role: string; isActive: boolean }
-type Exercise = { id: number; name: string; description: string | null; imageUrl: string | null; videoUrl: string | null; localImagePath: string | null; localVideoPath: string | null }
+type Exercise = { id: number; name: string; description: string | null; imageUrl: string | null; videoUrl: string | null; localImagePath: string | null; localVideoPath: string | null; muscleGroup: string | null }
 type Assignment = {
   id: number; clientId: number; trainerId: number; exerciseId: number
   scheduledDate: string; sets: number; reps: number; completed: boolean
   exercise: Exercise
   client: { id: number; fullName: string | null; username: string }
 }
+type Setting = { id: number; systemName: string; logoUrl: string | null; localLogoPath: string | null }
 
-type Tab = 'rutinas' | 'ejercicios' | 'clientes'
+type Tab = 'rutinas' | 'ejercicios' | 'clientes' | 'configuracion'
 
 export default function TrainerDashboardClient({
-  trainerId, clients, exercises, assignments,
+  trainerId, clients, exercises, assignments, settings
 }: {
   trainerId: number
   clients: Client[]
   exercises: Exercise[]
   assignments: Assignment[]
+  settings: Setting
 }) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('rutinas')
@@ -44,6 +47,8 @@ export default function TrainerDashboardClient({
   const [showEditUser, setShowEditUser] = useState<Client | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [filterClient, setFilterClient] = useState<number | ''>('')
+
+  const uniqueMuscleGroups = Array.from(new Set(exercises.map(e => e.muscleGroup).filter(Boolean))) as string[]
 
   const refresh = () => router.refresh()
 
@@ -116,6 +121,7 @@ export default function TrainerDashboardClient({
         <button className={`tab${tab === 'rutinas' ? ' active' : ''}`} onClick={() => setTab('rutinas')}>📋 Rutinas</button>
         <button className={`tab${tab === 'ejercicios' ? ' active' : ''}`} onClick={() => setTab('ejercicios')}>🏋️ Ejercicios</button>
         <button className={`tab${tab === 'clientes' ? ' active' : ''}`} onClick={() => setTab('clientes')}>👥 Clientes</button>
+        <button className={`tab${tab === 'configuracion' ? ' active' : ''}`} onClick={() => setTab('configuracion')}>⚙️ Sistema</button>
       </div>
 
       {/* ── RUTINAS ── */}
@@ -154,7 +160,7 @@ export default function TrainerDashboardClient({
                 ) : filteredAssignments.map(a => (
                   <tr key={a.id}>
                     <td><span className="badge badge-blue">{a.client.fullName || a.client.username}</span></td>
-                    <td style={{ fontWeight: 500 }}>{a.exercise.name}</td>
+                    <td style={{ fontWeight: 500, textWrap: 'balance' }}>{a.exercise.name}</td>
                     <td style={{ color: 'var(--text-secondary)' }}>{formatDate(a.scheduledDate)}</td>
                     <td><span className="badge badge-green">{a.sets}</span></td>
                     <td><span className="badge badge-green">{a.reps}</span></td>
@@ -188,8 +194,13 @@ export default function TrainerDashboardClient({
                   onError={e => { (e.target as HTMLImageElement).src = `https://placehold.co/400x200/1a2235/60a5fa?text=${encodeURIComponent(ex.name)}` }}
                 />
                 <div className="exercise-card-body">
-                  <div className="exercise-card-title">{ex.name}</div>
-                  <div className="exercise-card-desc">{ex.description || 'Sin descripción'}</div>
+                  <div className="exercise-card-title" style={{ textWrap: 'balance' }}>{ex.name}</div>
+                  <div className="exercise-card-desc" style={{ textWrap: 'pretty' }}>{ex.description || 'Sin descripción'}</div>
+                  {ex.muscleGroup && (
+                    <div className="mt-2 mb-2">
+                      <span className="badge badge-blue">💪 {ex.muscleGroup}</span>
+                    </div>
+                  )}
                   <div className="exercise-card-actions">
                     <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => setShowEditExercise(ex)}>✏️ Editar</button>
                     <button className="btn btn-danger btn-sm" onClick={() => setShowDeleteExercise(ex.id)}>🗑️</button>
@@ -248,6 +259,46 @@ export default function TrainerDashboardClient({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* ── DATALIST GLOBAL ── */}
+      <datalist id="muscle-groups">
+        {uniqueMuscleGroups.map(mg => <option key={mg} value={mg} />)}
+      </datalist>
+
+      {/* ── SETTINGS ── */}
+      {tab === 'configuracion' && (
+        <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="card-title">⚙️ Configuración del Sistema</span>
+          </div>
+          <form action={async (fd) => { fd.append('id', settings.id.toString()); await handleAction(() => updateSettings(fd)) }}>
+            <div className="form-group">
+              <label className="form-label" htmlFor="sys-name">Nombre del Sistema</label>
+              <input id="sys-name" name="systemName" className="form-input" defaultValue={settings.systemName} required autoComplete="off" />
+            </div>
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label className="form-label">Reemplazar Logo</label>
+              {(settings.localLogoPath || settings.logoUrl) && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--success)' }}>Logo actual guardado ✓</div>
+              )}
+              <input name="logo" type="file" accept="image/*" className="form-input" />
+              {(settings.localLogoPath || settings.logoUrl) && (
+                <label style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <input type="checkbox" name="remove_logo" value="true" />
+                  Eliminar logo actual
+                </label>
+              )}
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="ext-logo">O usar URL de logo (externo)</label>
+              <input id="ext-logo" name="logoUrl" className="form-input" defaultValue={settings.logoUrl || ''} type="url" placeholder="https://" autoComplete="off" />
+            </div>
+            <div className="modal-actions" style={{ marginTop: '2rem' }}>
+              <button type="submit" className="btn btn-primary btn-full" disabled={isPending}>Guardar Configuración</button>
+            </div>
+          </form>
         </div>
       )}
 
@@ -354,8 +405,12 @@ export default function TrainerDashboardClient({
                 <input name="name" className="form-input" placeholder="Nombre del ejercicio" required />
               </div>
               <div className="form-group">
-                <label className="form-label">Descripción</label>
-                <textarea name="description" className="form-textarea" placeholder="Descripción del ejercicio..." />
+                <label className="form-label" htmlFor="create-muscleGroup">Grupo Muscular</label>
+                <input id="create-muscleGroup" list="muscle-groups" name="muscleGroup" className="form-input" placeholder="Ej. Pecho, Espalda, Pierna" autoComplete="off" />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="create-desc">Descripción</label>
+                <textarea id="create-desc" name="description" className="form-textarea" placeholder="Descripción del ejercicio..." />
               </div>
               <div className="form-grid">
                 <div className="form-group">
@@ -398,8 +453,12 @@ export default function TrainerDashboardClient({
                 <input name="name" className="form-input" defaultValue={showEditExercise.name} required />
               </div>
               <div className="form-group">
-                <label className="form-label">Descripción</label>
-                <textarea name="description" className="form-textarea" defaultValue={showEditExercise.description || ''} />
+                <label className="form-label" htmlFor="edit-muscleGroup">Grupo Muscular</label>
+                <input id="edit-muscleGroup" list="muscle-groups" name="muscleGroup" className="form-input" defaultValue={showEditExercise.muscleGroup || ''} placeholder="Ej. Pecho, Espalda, Pierna" autoComplete="off" />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="edit-desc">Descripción</label>
+                <textarea id="edit-desc" name="description" className="form-textarea" defaultValue={showEditExercise.description || ''} />
               </div>
               <div className="form-grid">
                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>

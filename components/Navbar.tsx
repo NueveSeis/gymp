@@ -12,11 +12,14 @@ function LogoutBtn() {
   )
 }
 
-export default function Navbar({ username, role }: { username: string; role: string }) {
+export default function Navbar({ username, role, systemName, logoUrl }: { username: string; role: string; systemName?: string; logoUrl?: string | null }) {
   const roleLabel = role === 'trainer' ? '🏋️ Entrenador' : role === 'admin' ? '⚙️ Admin' : '👤 Cliente'
   return (
     <nav className="navbar">
-      <span className="navbar-brand">⚡ GymPro</span>
+      <span className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {logoUrl ? <img src={logoUrl} alt={systemName || 'Logo'} style={{ height: '32px', objectFit: 'contain' }} /> : '⚡'}
+        {systemName || 'GymPro'}
+      </span>
       <div className="navbar-user">
         <span>{roleLabel} — <strong>{username}</strong></span>
         <form action={logoutAction}>

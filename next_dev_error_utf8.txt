@@ -1,0 +1,25 @@
+﻿Ôû▓ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.175:3000
+- Experiments (use with caution):
+  ┬À serverActions
+
+Ô£ô Starting...
+Ô£ô Ready in 1546ms
+ GET /login?username=doce&password=1234 200 in 641ms (compile: 272ms, proxy.ts: 166ms, render: 203ms)
+ GET /login 200 in 73ms (compile: 6ms, proxy.ts: 11ms, render: 57ms)
+ GET /login 200 in 64ms (compile: 8ms, proxy.ts: 10ms, render: 46ms)
+ GET /login 200 in 65ms (compile: 9ms, proxy.ts: 9ms, render: 46ms)
+ GET /login 200 in 58ms (compile: 8ms, proxy.ts: 8ms, render: 43ms)
+ GET /login 200 in 67ms (compile: 10ms, proxy.ts: 8ms, render: 50ms)
+ GET /login 200 in 64ms (compile: 5ms, proxy.ts: 5ms, render: 54ms)
+ GET /login 200 in 58ms (compile: 7ms, proxy.ts: 9ms, render: 43ms)
+ GET /login 200 in 63ms (compile: 7ms, proxy.ts: 9ms, render: 47ms)
+ GET /login 200 in 72ms (compile: 7ms, proxy.ts: 8ms, render: 57ms)
+ GET /login 200 in 67ms (compile: 9ms, proxy.ts: 12ms, render: 47ms)
+ GET /login 200 in 63ms (compile: 8ms, proxy.ts: 9ms, render: 46ms)
+ GET /login 200 in 71ms (compile: 6ms, proxy.ts: 8ms, render: 57ms)
+ GET /login 200 in 64ms (compile: 7ms, proxy.ts: 8ms, render: 48ms)
+ GET /login 200 in 65ms (compile: 8ms, proxy.ts: 9ms, render: 48ms)
+ GET /login 200 in 53ms (compile: 5ms, proxy.ts: 5ms, render: 43ms)
+ GET /login 200 in 53ms (compile: 4ms, proxy.ts: 5ms, render: 43ms)

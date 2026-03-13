@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { getAssignments } from '@/actions/assignments'
+import { getSettings } from '@/actions/settings'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
@@ -11,6 +12,8 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
 
   const searchParams = await props.searchParams;
   const dateQuery = searchParams?.date;
+  
+  const settings = await getSettings();
   
   // Manejo de fecha sin verse afectado por la zona horaria del servidor
   let targetDate = new Date();
@@ -39,7 +42,7 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
 
   return (
     <>
-      <Navbar username={session.username} role={session.role} />
+      <Navbar username={session.username} role={session.role} systemName={settings.systemName} logoUrl={settings.localLogoPath || settings.logoUrl} />
       <div className="page">
         <div className="page-header">
           <h1>¡Hola, {session.fullName || session.username}! 💪</h1>
@@ -108,7 +111,12 @@ export default async function ClientPage(props: { searchParams?: Promise<{ date?
                         <span className="badge badge-blue">#{i + 1}</span>
                       </div>
                       {ex.description && (
-                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>{ex.description}</p>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', textWrap: 'balance' }}>{ex.description}</p>
+                      )}
+                      {ex.muscleGroup && (
+                        <div style={{ marginBottom: '1rem' }}>
+                          <span className="badge badge-blue">💪 {ex.muscleGroup}</span>
+                        </div>
                       )}
                       <div className="workout-meta">
                         <div className="workout-stat">

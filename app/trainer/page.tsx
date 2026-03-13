@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getUsers } from '@/actions/users'
 import { getExercises } from '@/actions/exercises'
 import { getAssignments } from '@/actions/assignments'
+import { getSettings } from '@/actions/settings'
 import Navbar from '@/components/Navbar'
 import TrainerDashboardClient from './TrainerDashboardClient'
 
@@ -11,10 +12,11 @@ export default async function TrainerPage() {
   if (!session) redirect('/login')
   if (session.role === 'client') redirect('/client')
 
-  const [clients, exercises, rawAssignments] = await Promise.all([
+  const [clients, exercises, rawAssignments, settings] = await Promise.all([
     getUsers('client'),
     getExercises(),
     getAssignments(),
+    getSettings()
   ])
 
   // Serializar las fechas a string para que sean compatibles con el componente cliente
@@ -25,12 +27,13 @@ export default async function TrainerPage() {
 
   return (
     <>
-      <Navbar username={session.username} role={session.role} />
+      <Navbar username={session.username} role={session.role} systemName={settings.systemName} logoUrl={settings.localLogoPath || settings.logoUrl} />
       <TrainerDashboardClient
         trainerId={session.id}
         clients={clients}
         exercises={exercises}
         assignments={assignments}
+        settings={settings}
       />
     </>
   )

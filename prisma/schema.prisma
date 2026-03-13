@@ -31,6 +31,7 @@ model Exercise {
   videoUrl       String?  @map("video_url") @db.VarChar(255)
   localImagePath String?  @map("local_image_path") @db.VarChar(255)
   localVideoPath String?  @map("local_video_path") @db.VarChar(255)
+  muscleGroup    String?  @map("muscle_group") @db.VarChar(100)
   createdAt      DateTime @default(now()) @map("created_at")
 
   assignments Assignment[]
@@ -59,4 +60,14 @@ enum Role {
   admin
   trainer
   client
+}
+
+model SystemSetting {
+  id            Int      @id @default(autoincrement())
+  systemName    String   @default("GymPro") @map("system_name") @db.VarChar(100)
+  logoUrl       String?  @map("logo_url") @db.VarChar(255)
+  localLogoPath String?  @map("local_logo_path") @db.VarChar(255)
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
 }
