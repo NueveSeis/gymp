@@ -2,18 +2,25 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { writeFile } from 'fs/promises'
+import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 
-// Helper function to save files to public/uploads
+// In production (Docker), UPLOAD_DIR points to the mounted volume.
+// In development, falls back to public/uploads inside the project.
+const UPLOAD_DIR =
+  process.env.UPLOAD_DIR || join(process.cwd(), 'public', 'uploads')
+
+// Helper function to save files to the upload directory
 async function saveUploadedFile(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;
   const buffer = Buffer.from(await file.arrayBuffer());
   const filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-  const uploadDir = join(process.cwd(), 'public', 'uploads');
-  const filepath = join(uploadDir, filename);
+  // Ensure directory exists (important for the volume mount)
+  await mkdir(UPLOAD_DIR, { recursive: true });
+  const filepath = join(UPLOAD_DIR, filename);
   await writeFile(filepath, buffer);
-  return `/uploads/${filename}`;
+  // Return the API route URL that will serve the file
+  return `/api/uploads/${filename}`;
 }
 
 export async function getExercises() {
