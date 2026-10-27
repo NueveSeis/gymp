@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.github
+.agents
+uploads
+public/uploads/*
+!public/uploads/.gitkeep
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+Dockerfile
+.dockerignore
