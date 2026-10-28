@@ -1,20 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { readFile } from 'fs/promises'
-import { join, extname } from 'path'
-import { existsSync } from 'fs'
+import { createReadStream } from 'node:fs'
+import { stat } from 'node:fs/promises'
+import { extname } from 'node:path'
+import { Readable } from 'node:stream'
+import type { NextRequest } from 'next/server'
+import { resolveUpload } from '@/lib/uploads'
 
-// Determine the upload directory:
-// In production (Docker), UPLOAD_DIR env var points to the mounted volume path.
-// In development, falls back to public/uploads inside the project.
-const UPLOAD_DIR =
-  process.env.UPLOAD_DIR || join(process.cwd(), 'public', 'uploads')
+export const runtime = 'nodejs'
 
-const MIME_TYPES: Record<string, string> = {
+const MIME: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.gif': 'image/gif',
   '.webp': 'image/webp',
+  '.avif': 'image/avif',
   '.svg': 'image/svg+xml',
   '.mp4': 'video/mp4',
   '.webm': 'video/webm',
@@ -22,36 +21,56 @@ const MIME_TYPES: Record<string, string> = {
   '.avi': 'video/x-msvideo',
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-) {
+// Sirve archivos del volumen de subidas con soporte de Range (necesario para
+// que los videos se puedan adelantar y reproducir en iPhone/Safari).
+export async function GET(request: NextRequest, ctx: RouteContext<'/api/uploads/[...path]'>) {
+  const { path } = await ctx.params
+  let name = path.length === 1 ? path[0] : ''
   try {
-    const { path: pathSegments } = await params
-    // Sanitize path to prevent directory traversal
-    const filename = pathSegments
-      .map((s) => s.replace(/\.\./g, ''))
-      .join('/')
+    name = decodeURIComponent(name)
+  } catch {}
+  const file = resolveUpload(name)
+  if (!file) return new Response('Not found', { status: 404 })
 
-    const filePath = join(UPLOAD_DIR, filename)
-
-    if (!existsSync(filePath)) {
-      return new NextResponse('File not found', { status: 404 })
-    }
-
-    const fileBuffer = await readFile(filePath)
-    const ext = extname(filename).toLowerCase()
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream'
-
-    return new NextResponse(fileBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400', // 24h cache
-      },
-    })
-  } catch (error) {
-    console.error('Error serving upload:', error)
-    return new NextResponse('Internal Server Error', { status: 500 })
+  let size: number
+  let mtime: Date
+  try {
+    const s = await stat(file)
+    if (!s.isFile()) return new Response('Not found', { status: 404 })
+    size = s.size
+    mtime = s.mtime
+  } catch {
+    return new Response('Not found', { status: 404 })
   }
+
+  const ext = extname(name).toLowerCase()
+  const headers = new Headers({
+    'Content-Type': MIME[ext] || 'application/octet-stream',
+    // Los nombres son únicos: se pueden cachear "para siempre"
+    'Cache-Control': 'public, max-age=31536000, immutable',
+    'Accept-Ranges': 'bytes',
+    'Last-Modified': mtime.toUTCString(),
+    'X-Content-Type-Options': 'nosniff',
+  })
+  if (ext === '.svg') headers.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'")
+
+  const range = request.headers.get('range')
+  const match = range?.match(/^bytes=(\d*)-(\d*)$/)
+  if (match && (match[1] || match[2])) {
+    let start = match[1] ? Number(match[1]) : size - Number(match[2])
+    let end = match[1] && match[2] ? Number(match[2]) : size - 1
+    start = Math.max(0, start)
+    end = Math.min(end, size - 1)
+    if (start > end || start >= size) {
+      return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${size}` } })
+    }
+    headers.set('Content-Range', `bytes ${start}-${end}/${size}`)
+    headers.set('Content-Length', String(end - start + 1))
+    const stream = Readable.toWeb(createReadStream(file, { start, end })) as ReadableStream
+    return new Response(stream, { status: 206, headers })
+  }
+
+  headers.set('Content-Length', String(size))
+  const stream = Readable.toWeb(createReadStream(file)) as ReadableStream
+  return new Response(stream, { status: 200, headers })
 }
