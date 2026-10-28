@@ -3,7 +3,7 @@
 // - copia sharp completo: el trazado omite sus librerías nativas (libvips)
 // - convierte en relativos los symlinks de .next/node_modules para que sigan
 //   funcionando al mover la carpeta (p. ej. dentro de la imagen Docker)
-import { cpSync, existsSync, lstatSync, readdirSync, readlinkSync, rmSync, symlinkSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, readdirSync, readlinkSync, symlinkSync, unlinkSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -23,12 +23,17 @@ if (existsSync(standalone)) {
   if (process.platform !== 'win32' && existsSync(externals)) {
     for (const name of readdirSync(externals)) {
       const link = join(externals, name)
-      if (!lstatSync(link).isSymbolicLink()) continue
-      const target = resolve(externals, readlinkSync(link))
-      const pkg = target.split(/node_modules[\\/]/).pop()
-      const local = join(standalone, 'node_modules', pkg)
-      rmSync(link)
-      symlinkSync(relative(externals, existsSync(local) ? local : target), link)
+      try {
+        if (!lstatSync(link).isSymbolicLink()) continue
+        const target = resolve(externals, readlinkSync(link))
+        const pkg = target.split(/node_modules[\\/]/).pop()
+        const local = join(standalone, 'node_modules', pkg)
+        // unlink borra solo el enlace (rmSync lo sigue y falla con EISDIR)
+        unlinkSync(link)
+        symlinkSync(relative(externals, existsSync(local) ? local : target), link)
+      } catch (e) {
+        console.warn(`[postbuild] no se pudo ajustar ${name}: ${e.message}`)
+      }
     }
   }
   console.log('[postbuild] standalone listo (assets + sharp)')
