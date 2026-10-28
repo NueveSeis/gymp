@@ -6,6 +6,7 @@ import { getClient } from '@/lib/queries'
 import { Avatar, PageHeader } from '@/components/ui/basics'
 import { LogoutButton } from '@/components/brand'
 import { PasswordForm } from '@/components/password-form'
+import { ThemeSelector } from '@/components/theme'
 
 export async function generateMetadata(): Promise<Metadata> {
   const { systemName } = await getSettings()
@@ -38,6 +39,11 @@ export default async function ProfilePage() {
           </div>
         </section>
       )}
+
+      <section className="card p-5">
+        <h2 className="mb-4 font-semibold">Apariencia</h2>
+        <ThemeSelector />
+      </section>
 
       <section className="card p-5">
         <h2 className="mb-4 font-semibold">Cambiar contraseña</h2>

@@ -105,7 +105,7 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
 
       <div className="fixed right-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-40 md:bottom-6">
         {open && (
-          <div className="card mb-3 w-72 animate-fade-in p-4 shadow-2xl shadow-black/50">
+          <div className="card mb-3 w-72 animate-fade-in p-4 shadow-2xl shadow-black/50 light:shadow-slate-900/15">
             <div className="mb-2 flex items-center justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-semibold">Descanso</p>
@@ -164,7 +164,7 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => setOpen((o) => !o)}
           className={clsx(
-            'ml-auto flex h-12 items-center gap-2 rounded-full px-4 font-semibold shadow-xl shadow-black/40 transition active:scale-95',
+            'ml-auto flex h-12 items-center gap-2 rounded-full px-4 font-semibold shadow-xl shadow-black/40 light:shadow-slate-900/15 transition active:scale-95',
             running ? 'bg-brand text-white' : 'border border-line-strong bg-elevated text-fg'
           )}
           aria-label="Temporizador de descanso"

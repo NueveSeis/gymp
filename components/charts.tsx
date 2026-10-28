@@ -43,7 +43,7 @@ export function LineChart({ points, unit, height = 180 }: { points: Point[]; uni
   const gridValues = [max, (max + min) / 2, min]
   const labelIdx = points.length <= 6 ? points.map((_, i) => i) : [0, Math.floor((points.length - 1) / 2), points.length - 1]
   return (
-    <svg viewBox={`0 0 ${w} ${h + 18}`} className="w-full" role="img" aria-label={`Gráfica en ${unit}`}>
+    <svg viewBox={`0 0 ${w} ${h + 24}`} className="w-full" role="img" aria-label={`Gráfica en ${unit}`}>
       <defs>
         <linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="var(--color-brand)" stopOpacity="0.28" />
@@ -53,7 +53,7 @@ export function LineChart({ points, unit, height = 180 }: { points: Point[]; uni
       {gridValues.map((v, i) => (
         <g key={i}>
           <line x1={pad} x2={w - pad} y1={y(v)} y2={y(v)} className="stroke-line" strokeDasharray="3 5" />
-          <text x={w - pad} y={y(v) - 5} textAnchor="end" className="fill-subtle text-[11px]">
+          <text x={w - pad} y={y(v) - 5} textAnchor="end" className="fill-subtle text-[15px]">
             {Number(v.toFixed(1))} {unit}
           </text>
         </g>
@@ -66,7 +66,7 @@ export function LineChart({ points, unit, height = 180 }: { points: Point[]; uni
         </circle>
       ))}
       {labelIdx.map((i) => (
-        <text key={i} x={x(i)} y={h + 12} textAnchor="middle" className="fill-subtle text-[11px]">
+        <text key={i} x={x(i)} y={h + 16} textAnchor="middle" className="fill-subtle text-[15px]">
           {formatDate.short(points[i].date)}
         </text>
       ))}

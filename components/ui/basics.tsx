@@ -138,7 +138,7 @@ export function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md'
   return (
     <div
       className={clsx('grid shrink-0 place-items-center rounded-full font-semibold', sizes[size])}
-      style={{ background: `hsl(${hue} 70% 55% / 0.16)`, color: `hsl(${hue} 85% 75%)` }}
+      style={{ background: `hsl(${hue} 70% 55% / 0.16)`, color: `hsl(${hue} 85% var(--avatar-l))` }}
       aria-hidden
     >
       {initials || '?'}

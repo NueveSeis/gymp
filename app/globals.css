@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* light:… aplica estilos solo en modo claro */
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
+
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
@@ -36,6 +39,40 @@
     0% { transform: scale(0.85); }
     100% { transform: scale(1); }
   }
+}
+
+/* Variables extra que cambian con el tema */
+:root {
+  --avatar-l: 76%;
+  --backdrop: rgb(0 0 0 / 0.65);
+}
+
+/* Modo claro: mismas variables, otros valores (lo activa data-theme en <html>) */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f4f6fa;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef1f6;
+  --color-elevated: #ffffff;
+  --color-line: #e2e7ef;
+  --color-line-strong: #cdd5e1;
+  --color-fg: #0f172a;
+  --color-muted: #4f5d75;
+  --color-subtle: #7a869b;
+
+  --color-brand: #2563eb;
+  --color-brand-strong: #1d4ed8;
+  --color-brand-fg: #1d4ed8;
+  --color-accent: #0891b2;
+  --color-ok: #059669;
+  --color-ok-fg: #047857;
+  --color-warn: #d97706;
+  --color-warn-fg: #b45309;
+  --color-danger: #dc2626;
+  --color-danger-fg: #b91c1c;
+
+  --avatar-l: 36%;
+  --backdrop: rgb(15 23 42 / 0.45);
 }
 
 @layer base {
@@ -150,7 +187,7 @@ dialog.modal[open] {
   animation: var(--animate-fade-in);
 }
 dialog.modal::backdrop {
-  background: rgb(0 0 0 / 0.65);
+  background: var(--backdrop, rgb(0 0 0 / 0.65));
   backdrop-filter: blur(3px);
 }
 @media (max-width: 640px) {

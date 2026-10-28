@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
-import { Toaster } from 'sonner'
+import { AppToaster } from '@/components/theme'
+import { THEME_SCRIPT } from '@/lib/theme'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
@@ -13,7 +14,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0a0d14',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f4f6fa' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0d14' },
+  ],
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -21,15 +25,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-MX" className={inter.variable}>
+    // data-theme lo pone el script antes de pintar (por eso suppressHydrationWarning)
+    <html lang="es-MX" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body>
         {children}
-        <Toaster
-          theme="dark"
-          position="top-center"
-          richColors
-          toastOptions={{ style: { background: 'var(--color-elevated)', border: '1px solid var(--color-line-strong)' } }}
-        />
+        <AppToaster />
       </body>
     </html>
   )

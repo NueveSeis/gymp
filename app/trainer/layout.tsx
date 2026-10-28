@@ -4,6 +4,7 @@ import { getActiveAccount, requirePageUser } from '@/lib/auth'
 import { getSettings } from '@/lib/settings'
 import { Brand, LogoutButton } from '@/components/brand'
 import { BottomNav, SidebarNav, type NavItem } from '@/components/nav'
+import { ThemeToggle } from '@/components/theme'
 import { Avatar } from '@/components/ui/basics'
 
 const NAV: NavItem[] = [
@@ -34,6 +35,7 @@ export default async function TrainerLayout({ children }: { children: React.Reac
             <p className="truncate text-sm font-medium">{session.name}</p>
             <p className="text-xs text-subtle">{session.role === 'admin' ? 'Administrador' : 'Entrenador'}</p>
           </div>
+          <ThemeToggle />
           <LogoutButton compact />
         </div>
       </aside>
@@ -42,7 +44,10 @@ export default async function TrainerLayout({ children }: { children: React.Reac
         <Link href="/trainer" className="min-w-0">
           <Brand name={settings.systemName} logo={settings.logo} />
         </Link>
-        <LogoutButton compact />
+        <div className="flex items-center">
+          <ThemeToggle />
+          <LogoutButton compact />
+        </div>
       </header>
 
       <main className="min-w-0 flex-1 px-4 pt-5 pb-28 sm:px-6 md:pt-8 md:pb-12 lg:px-10">

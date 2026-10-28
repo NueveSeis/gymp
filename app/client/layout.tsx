@@ -5,6 +5,7 @@ import { getSettings } from '@/lib/settings'
 import { Brand, LogoutButton } from '@/components/brand'
 import { BottomNav, TopNav, type NavItem } from '@/components/nav'
 import { RestTimerProvider } from '@/components/rest-timer'
+import { ThemeToggle } from '@/components/theme'
 
 const NAV: NavItem[] = [
   { href: '/client', label: 'Hoy', icon: 'today', exact: true },
@@ -25,7 +26,10 @@ export default async function ClientLayout({ children }: { children: React.React
             <Brand name={settings.systemName} logo={settings.logo} />
           </Link>
           <TopNav items={NAV} />
-          <LogoutButton compact />
+          <div className="flex items-center">
+            <ThemeToggle />
+            <LogoutButton compact />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 pt-5 pb-32 md:pb-16">{children}</main>
