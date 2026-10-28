@@ -82,6 +82,15 @@ Al cambiar a la v2 todos tendrán que **iniciar sesión una vez más** (el forma
 
 Si la base está vacía, al arrancar se crea un usuario `admin` (contraseña en `ADMIN_PASSWORD` o una temporal impresa en los logs).
 
+### ¿No puedes entrar?
+
+| Lo que ves | Causa | Solución |
+| --- | --- | --- |
+| Vuelve al login sin ningún error | Versión anterior: la cookie se marcaba *Secure* y el dominio es `http://` | Ya corregido: la cookie usa *Secure* solo cuando la petición llega por HTTPS |
+| "Usuario o contraseña incorrectos" | El admin ya existía y `ADMIN_PASSWORD` solo se usa con la base vacía | En Dokploy agrega `ADMIN_RESET=true` (con `ADMIN_USERNAME` y `ADMIN_PASSWORD`), redepliega, entra y quita `ADMIN_RESET`. O en la terminal del contenedor: `npm run admin -- usuario contraseña` |
+| "No pudimos conectar con el servidor" | La app no llega a la base | Revisa MySQL remoto en Hostinger y `DATABASE_URL`; prueba `/api/health` |
+| "Demasiados intentos" | 8 intentos fallidos en 15 min | Espera o reinicia la app |
+
 ---
 
 ## Desarrollo local
@@ -99,6 +108,7 @@ npm run dev
 | `npm run build` | Build de producción (standalone) |
 | `npm start` | Migra y arranca el build |
 | `npm run db:migrate` | Aplica migraciones pendientes |
+| `npm run admin -- usuario clave` | Crea o restablece un administrador |
 | `npm run typecheck` / `npm run lint` | Verificaciones |
 
 ## Estructura

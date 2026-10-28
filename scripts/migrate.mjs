@@ -58,28 +58,55 @@ function splitStatements(sql) {
     .filter(Boolean)
 }
 
-async function bootstrapAdmin(conn) {
-  const [[{ total }]] = await conn.query('SELECT COUNT(*) AS total FROM `users`')
-  if (Number(total) > 0) return
+/** Crea el admin, o si ya existe le pone esa contraseña, rol admin y lo activa */
+export async function setAdmin(conn, username, password) {
   const bcrypt = (await import('bcryptjs')).default
-  const username = process.env.ADMIN_USERNAME || 'admin'
-  const generated = !process.env.ADMIN_PASSWORD
-  const password = process.env.ADMIN_PASSWORD || randomBytes(9).toString('base64url')
+  const hash = await bcrypt.hash(password, 10)
+  const [res] = await conn.query("UPDATE `users` SET `password` = ?, `role` = 'admin', `is_active` = TRUE WHERE `username` = ?", [
+    hash,
+    username,
+  ])
+  if (res.affectedRows > 0) return 'actualizado'
   await conn.query(
     'INSERT INTO `users` (`username`, `password`, `role`, `full_name`, `is_active`) VALUES (?, ?, ?, ?, TRUE)',
-    [username, await bcrypt.hash(password, 10), 'admin', 'Administrador']
+    [username, hash, 'admin', 'Administrador']
   )
-  console.log(`[migrate] Base de datos vacía: se creó el usuario admin "${username}".`)
-  if (generated) console.log(`[migrate] Contraseña temporal: ${password}  (cámbiala al entrar)`)
+  return 'creado'
 }
 
-export async function migrate() {
+async function bootstrapAdmin(conn) {
+  const username = (process.env.ADMIN_USERNAME || 'admin').trim()
+  const envPassword = process.env.ADMIN_PASSWORD?.trim()
+  const [[{ total }]] = await conn.query('SELECT COUNT(*) AS total FROM `users`')
+
+  if (Number(total) === 0) {
+    const password = envPassword || randomBytes(9).toString('base64url')
+    await setAdmin(conn, username, password)
+    console.log(`[migrate] Base de datos vacía: se creó el usuario admin "${username}".`)
+    if (!envPassword) console.log(`[migrate] Contraseña temporal: ${password}  (cámbiala al entrar)`)
+    return
+  }
+
+  // Recuperar acceso desde Dokploy: ADMIN_RESET=true + ADMIN_USERNAME + ADMIN_PASSWORD
+  if (process.env.ADMIN_RESET === 'true') {
+    if (!envPassword) return console.warn('[migrate] ADMIN_RESET=true necesita ADMIN_PASSWORD')
+    const result = await setAdmin(conn, username, envPassword)
+    console.log(`[migrate] ADMIN_RESET: admin "${username}" ${result}. Quita ADMIN_RESET de las variables.`)
+  }
+}
+
+export async function connect() {
   loadEnv()
   const url = process.env.DATABASE_URL
   if (!url) throw new Error('DATABASE_URL no está definida')
-
   const mysql = (await import('mysql2/promise')).default
   const conn = await mysql.createConnection(connectionOptions(url))
+  await conn.query("SET time_zone = '+00:00'")
+  return conn
+}
+
+export async function migrate() {
+  const conn = await connect()
   try {
     await conn.query(
       'CREATE TABLE IF NOT EXISTS `schema_migrations` (`name` VARCHAR(191) NOT NULL PRIMARY KEY, `applied_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'

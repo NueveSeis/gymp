@@ -1,6 +1,6 @@
 import 'server-only'
 import { cache } from 'react'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { eq } from 'drizzle-orm'
 import { db, schema } from './db'
@@ -14,11 +14,23 @@ export const getSession = cache(async (): Promise<Session | null> => {
   return verifySession(store.get(SESSION_COOKIE)?.value)
 })
 
+/**
+ * "Secure" solo si la petición llegó por HTTPS. Detrás de Traefik (Dokploy) el
+ * protocolo real viene en x-forwarded-proto; con un dominio http:// una cookie
+ * Secure se descarta en silencio y el login regresa a /login.
+ */
+async function isHttpsRequest() {
+  if (process.env.INSECURE_COOKIES === 'true') return false
+  const proto = (await headers()).get('x-forwarded-proto')
+  if (proto) return proto.split(',')[0].trim() === 'https'
+  return process.env.NODE_ENV === 'production'
+}
+
 export async function startSession(session: Session) {
   const store = await cookies()
   store.set(SESSION_COOKIE, await signSession(session), {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' && process.env.INSECURE_COOKIES !== 'true',
+    secure: await isHttpsRequest(),
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE,
     path: '/',
